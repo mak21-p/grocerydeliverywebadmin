@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:html' as html;
 
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart';
+import 'package:image_picker_web/image_picker_web.dart';
+import 'package:mime_type/mime_type.dart';
+import 'package:path/path.dart' as Path;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker_for_web/image_picker_for_web.dart';
 
 List<String> fruits = <String>[
   'Select Item',
@@ -146,16 +149,13 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
   var _desctext = TextEditingController();
   ValueNotifier<int> controller = ValueNotifier<int>(0);
 
-  PlatformFile? pickedFile;
-  PlatformFile? pickedFile2;
-  PlatformFile? pickedFile3;
   UploadTask? uploadTask;
-  UploadTask? uploadTask2;
-  UploadTask? uploadTask3;
   var urlDownload;
   var urlDownload2;
   var urlDownload3;
   String dropdownvalue = 'Select Item';
+  html.File? _cloudFile;
+  Uint8List? _fileBytes;
 
   Future uploadFile() async {
     Random rand1 = new Random();
@@ -164,37 +164,18 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
     int random2 = rand2.nextInt(1000);
     Random rand3 = new Random();
     int random3 = rand3.nextInt(10000);
-    final path = '${widget.category}/${_nametext.text} ${random1}';
-    final file = File(pickedFile!.path!);
-    final path2 = '${widget.category}/${_nametext.text} ${random2}';
-    final file2 = File(pickedFile2!.path!);
-    final path3 = '${widget.category}/${_nametext.text} ${random3}';
-    final file3 = File(pickedFile3!.path!);
+
+    String path = '${widget.category}/${_nametext.text} ${random1}';
 
     final ref = FirebaseStorage.instance.ref().child(path);
-    uploadTask = ref.putFile(file);
+    uploadTask = ref.putData(_fileBytes!);
 
     final snapshot = await uploadTask!.whenComplete(() {
       print('1 done');
     });
 
     urlDownload = await snapshot.ref.getDownloadURL();
-
-    final ref2 = FirebaseStorage.instance.ref().child(path2);
-    uploadTask2 = ref2.putFile(file2);
-
-    final snapshot2 = await uploadTask2!.whenComplete(() {
-      print('2 done');
-    });
-
-    urlDownload2 = await snapshot2.ref.getDownloadURL();
-
-    final ref3 = FirebaseStorage.instance.ref().child(path3);
-    uploadTask3 = ref3.putFile(file3);
-
-    final snapshot3 = await uploadTask3!.whenComplete(() {});
-
-    urlDownload3 = await snapshot3.ref.getDownloadURL();
+    print(urlDownload);
 
     final db = FirebaseFirestore.instance;
   }
@@ -211,10 +192,7 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
       "Name": _nametext.text,
       "Price": _pricetext.text,
       "Weight": _weighttext.text,
-      "tags": dropdownvalue,
-      "image": urlDownload,
-      "image2": urlDownload2,
-      "image3": urlDownload3,
+      "image": "${urlDownload}",
       "description": _desctext.text
     };
 
@@ -229,30 +207,17 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
   }
 
   Future selectFile() async {
-    final result = await FilePicker.platform.pickFiles();
-    if (result == null) return;
+    var mediaData = await ImagePickerWeb.getImageInfo;
+    String? mimeType = mime(Path.basename(mediaData!.fileName!));
+    html.File mediaFile =
+        new html.File(mediaData.data!, mediaData.fileName!, {'type': mimeType});
 
-    setState(() {
-      pickedFile = result.files.first;
-    });
-  }
-
-  Future selectFile2() async {
-    final result2 = await FilePicker.platform.pickFiles();
-    if (result2 == null) return;
-
-    setState(() {
-      pickedFile2 = result2.files.first;
-    });
-  }
-
-  Future selectFile3() async {
-    final result3 = await FilePicker.platform.pickFiles();
-    if (result3 == null) return;
-
-    setState(() {
-      pickedFile3 = result3.files.first;
-    });
+    if (mediaFile != null) {
+      setState(() {
+        _cloudFile = mediaFile;
+        _fileBytes = mediaData.data;
+      });
+    }
   }
 
   @override
@@ -636,79 +601,11 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
                             fontSize: 20,
                           ),
                         ),
-                        if (pickedFile != null)
-                          Center(
-                            child: Image.file(
-                              File(pickedFile!.path!),
-                              width: 125,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
                         Center(
                           child: ElevatedButton(
                             onPressed: selectFile,
                             child: Text(
                               'Pick Image (Fill Name Text First!)',
-                            ),
-                            style: ButtonStyle(
-                              elevation: MaterialStateProperty.all(0),
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  Color.fromARGB(255, 31, 89, 41)),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                      const EdgeInsets.symmetric(
-                                          vertical: 11, horizontal: 10)),
-                              shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                              )),
-                            ),
-                          ),
-                        ),
-                        if (pickedFile2 != null)
-                          Center(
-                            child: Image.file(
-                              File(pickedFile2!.path!),
-                              width: 125,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: selectFile2,
-                            child: Text(
-                              'Pick Second Image (Fill Name Text First!)',
-                            ),
-                            style: ButtonStyle(
-                              elevation: MaterialStateProperty.all(0),
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  Color.fromARGB(255, 31, 89, 41)),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                      const EdgeInsets.symmetric(
-                                          vertical: 11, horizontal: 10)),
-                              shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                              )),
-                            ),
-                          ),
-                        ),
-                        if (pickedFile3 != null)
-                          Center(
-                            child: Image.file(
-                              File(pickedFile3!.path!),
-                              width: 125,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: selectFile3,
-                            child: Text(
-                              'Pick Third Image (Fill Name Text First!)',
                             ),
                             style: ButtonStyle(
                               elevation: MaterialStateProperty.all(0),
