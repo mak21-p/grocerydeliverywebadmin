@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "",
+    "project_id": "",
+    "storage_bucket": ""
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:638387293513:android:84f90841d4cbc1baee5e98",
+        "android_client_info": {
+          "package_name": "com.maqsood.grocerydelivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "638387293513-65i7cr0ktbh5147g9rmgt2vvoegq96vg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2y3CrV-e62upPNIw84w6fm3382hWfiKQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "638387293513-65i7cr0ktbh5147g9rmgt2vvoegq96vg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "638387293513-8ra68dk623evgac977tie4ip8svdno8k.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.maqsood.grocerydelivery"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
